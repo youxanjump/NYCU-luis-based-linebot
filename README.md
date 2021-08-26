@@ -1,9 +1,9 @@
 # NYCU-luis-based-linebot
 測試用linebot
 
-看一下我main.py有import什麼，記得都要pip install一下
-我的資料存取都是學校大數據中心的電腦，所以記得要連學校VPN才可以正常使用
-因為資料庫是使用微軟的MSSQL，記得要裝driver，蛋目前Apple M1晶片是無法安裝（開虛擬機用Ubuntu應該都安全啦，不過我都是直接在Intel cpu下的macos環境執行，所以沒試過）
+- 看一下我main.py有import什麼，記得都要pip install一下
+- 我的資料存取都是學校大數據中心的電腦，所以記得要連學校VPN才可以正常使用
+- 因為資料庫是使用微軟的MSSQL，記得要裝driver，目前Apple M1晶片無法安裝（開虛擬機用Ubuntu應該都安全啦，不過我都是直接在Intel cpu下的macos環境執行，所以沒試過）
 
 ## intent_test.py
 單純用來測試自然語言透過luis_sheet專案分析完後的結果
