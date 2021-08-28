@@ -1,10 +1,6 @@
 # coding: utf-8
-
-import sys
-import numpy as np
-import pandas as pd
-import pyodbc
 import time
+from Naked.toolshed.shell import muterun_js
 
 mtext = "學校地圖"
 start_time = time.time()
