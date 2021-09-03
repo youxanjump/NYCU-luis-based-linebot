@@ -152,6 +152,11 @@ def reply_message(event):
     # 地圖
     elif intent == '校區地圖':
         message = campus_map(mtext)
+    # 游泳館人數
+    elif intent == '健身房人數':
+        message = get_gym_crowd()
+    elif intent == '游泳池人數':
+        message = get_pool_crowd()
     # 答案回饋
     elif question_feedback_intent == '@答案回饋':
         message = answer_feedback(mtext)
@@ -2795,6 +2800,53 @@ def campus_map(mtext):
         return TextSendMessage(text='小幫手目前還沒有LOOPLUS的資訊喔！')
     else:
         return repair(mtext.split('/')[0])
+
+
+def get_gym_crowd():
+    import urllib.request as req
+    url_gym_crowd = 'https://swimpool.nctu.edu.tw/NCTUGym/index.php/crowd/GetGymCrowd'
+    url_gym_crowd_line = 'https://swimpool.nctu.edu.tw/NCTUGym/index.php/crowd/GetGymLineCrowd'
+
+    # create a Request object with Request Header
+    request_gym_crowd=req.Request(url_gym_crowd, headers={
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
+    })
+
+    with req.urlopen(request_gym_crowd) as response:
+        data_gym_crowd = response.read()
+
+    with req.urlopen(url_gym_crowd_line) as response:
+        data_gym_crowd_line = response.read()
+
+    import json
+    data_gym_crowd_json = json.loads(data_gym_crowd)
+    data_gym_crowd_line_json = json.loads(data_gym_crowd_line)
+
+    reply_msg = "目前游泳館健身房有" + data_gym_crowd_json['crowd'] + "人\n\n資料更新時間：\n" + data_gym_crowd_json['time']
+    message = TextSendMessage(reply_msg)
+
+    return message
+
+
+def get_pool_crowd():
+    import urllib.request as req
+    url_pool_crowd = 'https://swimpool.nctu.edu.tw/NCTUGym/index.php/crowd/GetPoolCrowd'
+
+    # create a Request object with Request Header
+    request_pool_crowd=req.Request(url_pool_crowd, headers={
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
+    })
+
+    with req.urlopen(request_pool_crowd) as response:
+        data_pool_crowd = response.read()
+
+    import json
+    data_pool_crowd_json = json.loads(data_pool_crowd)
+
+    reply_msg = "目前游泳池有：" + data_pool_crowd_json['crowd'] + "人\n\n資料更新時間：\n" + data_pool_crowd_json['time']
+    message = TextSendMessage(reply_msg)
+
+    return message
 
 
 def answer_feedback(mtext):
