@@ -1,9 +1,24 @@
 # NYCU-luis-based-linebot
 測試用linebot
 
-- 看一下我main.py有import什麼，記得都要pip install一下
-- 我的資料存取都是學校大數據中心的電腦，所以記得要連學校VPN才可以正常使用
-- 因為資料庫是使用微軟的MSSQL，記得要裝driver，目前Apple M1晶片無法安裝（開虛擬機用Ubuntu應該都安全啦，不過我都是直接在Intel cpu下的macos環境執行，所以沒試過）
+- 安裝python所需套件
+  - for Windows
+  ```shell
+  cd NYCU-luis-based-linebot
+  py -m pip install -r requirements.txt
+  ```
+  - for macOS
+  ```shell
+  cd NYCU-luis-based-linebot
+  python -m pip install -r requirements.txt
+  ```
+- 安裝Nodejs所需套件
+```shell
+cd luis_sheet
+npm install
+```
+- 我的資料存取都是學校大數據中心的電腦，所以記得要連學校VPN才可以正常使用，但如果在學校的話就不用特別連了([設定教學](https://it.nycu.edu.tw/it-services/networks/ssl-vpn/))
+- 因為資料庫是使用微軟的MSSQL，記得要裝Microsoft ODBC driver（[for macOS](https://docs.microsoft.com/zh-tw/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos?view=sql-server-ver15)、[for Windows](https://docs.microsoft.com/zh-tw/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver15)、[for Linux](https://docs.microsoft.com/zh-tw/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15)）
 
 ## intent_test.py
 單純用來測試自然語言透過luis_sheet專案分析完後的結果
@@ -14,13 +29,13 @@
 3. 接著跟著code的註解，應該能滿清楚每個function的功用
 
 ## main.py
-- bot_config.py在我本人這邊，因為金曜都在這裡
+- bot_config.py在我本人這邊，因為金鑰都在這裡
 - 要測試的話，去安裝[ngrok](https://ngrok.com)
 - 執行ngrok
 ```shell
 ngrok http 5000
 ```
-- 將網址(https://的那個)貼到LINE DEVELOP帳號底下的Message API中的Webhook，最後加上"/CampusChatbot"
+- 將網址(https的那個)貼到LINE DEVELOP帳號底下的Message API中的Webhook，最後加上"/CampusChatbot"
 - 執行main.py
 ```shell
 python main.py
