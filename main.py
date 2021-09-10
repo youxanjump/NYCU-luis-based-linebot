@@ -1,6 +1,6 @@
 from flask import Flask, request, abort
 from config import DevConfig
-from bot_config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET, MSSQL_ENGINE, MSSQL_DRIVER
+from bot_config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET, MSSQL_ENGINE, MSSQL_DRIVER, API_KEY
 
 from datetime import datetime
 
@@ -157,6 +157,11 @@ def reply_message(event):
         message = get_gym_crowd()
     elif intent == '游泳池人數':
         message = get_pool_crowd()
+    # 學生餐廳
+    elif intent == '餐廳營業時間' or intent == '@學生餐廳':
+        message = restaurant(mtext)
+    elif intent == '@詢問學生餐廳':
+        message = ask_restaurant(mtext)
     # 答案回饋
     elif question_feedback_intent == '@答案回饋':
         message = answer_feedback(mtext)
@@ -2847,6 +2852,119 @@ def get_pool_crowd():
     message = TextSendMessage(reply_msg)
 
     return message
+
+
+def restaurant(mtext):
+    campus = mtext.split('/')[1]
+    restaurant = mtext.split('/')[2]
+    if (restaurant == '沒指定' or restaurant == ''):
+        if (campus == '沒指定' or campus == ''):
+            return TemplateSendMessage(
+                alt_text='請選擇校區',
+                template=ButtonsTemplate(
+                    title='請選擇校區',
+                    text='想知道哪個校區的學餐資訊呢？',
+                    actions=[
+                        MessageTemplateAction(
+                            label='交大校區',
+                            text='@學生餐廳/交大校區/沒指定'
+                        ),
+                        MessageTemplateAction(
+                            label='陽明校區',
+                            text='@學生餐廳/陽明校區/沒指定'
+                        )
+                    ]
+                )
+            )
+        else:
+            result = pd.read_sql("SELECT 學生餐廳 from dbo.學生餐廳資訊 \
+                    WHERE 校區 LIKE '%" + campus + "%'", cnxn)
+            restaurant_list = []
+            for rest in result['學生餐廳']:
+                tmp_list = MessageTemplateAction(
+                    label=rest,
+                    text='@學生餐廳/' + campus + '/' + rest
+                )
+                if not (tmp_list in restaurant_list):
+                    restaurant_list.append(tmp_list)
+            return TemplateSendMessage(
+                alt_text='請選擇餐廳',
+                template=ButtonsTemplate(
+                    title='請選擇餐廳',
+                    text='想知道' + campus + '的哪間學餐的資訊呢？',
+                    actions=restaurant_list
+                )
+            )
+    else:
+        result = pd.read_sql("SELECT 餐廳名稱 from dbo.學生餐廳資訊 \
+                WHERE 校區 LIKE '%" + campus + "%'\
+                AND 學生餐廳 LIKE '%" + restaurant + "%'", cnxn)
+        restaurant_name_list = []
+        for restaurant_name in result['餐廳名稱']:
+            restaurant_name_list.append(CarouselColumn(
+                title=restaurant_name,
+                text='想詢問' + restaurant_name + '的資訊嗎？',
+                actions=[
+                    MessageTemplateAction(
+                        label='營業時間',
+                        text='@詢問學生餐廳/' + restaurant_name + '/' + '營業時間'
+                    ),
+                    MessageTemplateAction(
+                        label='查看菜單',
+                        text='@詢問學生餐廳/' + restaurant_name + '/' + '菜單網址'
+                    ),
+                    MessageTemplateAction(
+                        label='查看目前人潮',
+                        text='@詢問學生餐廳/' + restaurant_name + '/' + '查看目前人潮'
+                    )
+                ]
+            ))
+        return TemplateSendMessage(
+            alt_text='請選擇餐廳',
+            template=CarouselTemplate(
+                columns=restaurant_name_list
+            )
+        )
+
+
+def ask_restaurant(mtext):
+    restaurant = mtext.split('/')[1]
+    action = mtext.split('/')[2]
+
+    if action == '查看目前人潮':
+        import populartimes, json
+        from datetime import date, datetime
+        import calendar
+        # 取得今天星期幾
+        today = calendar.day_name[date.today().weekday()]
+        # 取得現在幾點
+        now_clock = int(datetime.now().strftime("%H"))
+        place_id = pd.read_sql("SELECT 地點ID from dbo.學生餐廳資訊 \
+                WHERE 餐廳名稱 LIKE '%" + restaurant + "%'", cnxn)['地點ID'][0]
+        populartimes_json = populartimes.get_id(API_KEY, place_id)
+        for days in populartimes_json['populartimes']:
+            if days['name'] == today:
+                if days['data'][now_clock] == 0:
+                    popular_level = '休息中'
+                elif days['data'][now_clock] <= 25:
+                    popular_level = '通常非繁忙時段'
+                elif days['data'][now_clock] <= 50:
+                    popular_level = '通常略為繁忙'
+                elif days['data'][now_clock] <= 75:
+                    popular_level = '通常有點繁忙'
+                elif days['data'][now_clock] <= 25:
+                    popular_level = '通常極為繁忙'
+                rmtext = '根據Google Map的統計\n目前' + restaurant + '為' + popular_level
+                return TextSendMessage(rmtext)
+
+    else:
+        result = pd.read_sql("SELECT " + action + " from dbo.學生餐廳資訊 \
+                WHERE 餐廳名稱 LIKE '%" + restaurant + "%'", cnxn)
+
+        if action == '營業時間':
+            return TextSendMessage(result[action][0])
+        elif action == '菜單網址':
+            return ImageSendMessage(original_content_url=result[action][0], preview_image_url=result[action][0])
 
 
 def answer_feedback(mtext):

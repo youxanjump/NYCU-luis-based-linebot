@@ -6,3 +6,4 @@ pandas
 pyodbc
 sqlalchemy
 line-bot-sdk
+git+https://github.com/m-wrzr/populartimes
