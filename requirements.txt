@@ -1,5 +1,7 @@
 Naked
 flask
+flask_script
+flask-admin
 DevConfig
 datetime
 pandas
@@ -7,3 +9,5 @@ pyodbc
 sqlalchemy
 line-bot-sdk
 git+https://github.com/m-wrzr/populartimes
+imgurpython
+pyimgur

@@ -2881,18 +2881,22 @@ def restaurant(mtext):
                     WHERE 校區 LIKE '%" + campus + "%'", cnxn)
             restaurant_list = []
             for rest in result['學生餐廳']:
-                tmp_list = MessageTemplateAction(
-                    label=rest,
-                    text='@學生餐廳/' + campus + '/' + rest
+                tmp_list = CarouselColumn(
+                    title=rest,
+                    text='想詢問' + rest + '的資訊嗎？',
+                    actions=[
+                        MessageTemplateAction(
+                            label='詢問這裡',
+                            text='@學生餐廳/' + campus + '/' + rest
+                        )
+                    ]
                 )
                 if not (tmp_list in restaurant_list):
                     restaurant_list.append(tmp_list)
             return TemplateSendMessage(
                 alt_text='請選擇餐廳',
-                template=ButtonsTemplate(
-                    title='請選擇餐廳',
-                    text='想知道' + campus + '的哪間學餐的資訊呢？',
-                    actions=restaurant_list
+                template=CarouselTemplate(
+                    columns=restaurant_list
                 )
             )
     else:
