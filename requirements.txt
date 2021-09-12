@@ -2,6 +2,7 @@ Naked
 flask
 flask_script
 flask-admin
+flask_sqlalchemy
 DevConfig
 datetime
 pandas
