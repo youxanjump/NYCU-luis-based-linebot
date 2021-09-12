@@ -6,8 +6,7 @@ DevConfig
 datetime
 pandas
 pyodbc
+pymssql
 sqlalchemy
 line-bot-sdk
 git+https://github.com/m-wrzr/populartimes
-imgurpython
-pyimgur
