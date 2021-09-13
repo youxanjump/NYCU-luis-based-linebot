@@ -154,14 +154,14 @@ def reply_message(event):
         message = campus_map(mtext)
     # 游泳館人數
     elif intent == '健身房人數':
-        message = get_gym_crowd()
+        message = get_gym_crowd(user_question)
     elif intent == '游泳池人數':
-        message = get_pool_crowd()
+        message = get_pool_crowd(user_question)
     # 學生餐廳
     elif intent == '餐廳營業時間' or intent == '@學生餐廳':
         message = restaurant(mtext)
     elif intent == '@詢問學生餐廳':
-        message = ask_restaurant(mtext)
+        message = ask_restaurant(mtext, user_question)
     # 答案回饋
     elif question_feedback_intent == '@答案回饋':
         message = answer_feedback(mtext)
@@ -2807,7 +2807,7 @@ def campus_map(mtext):
         return repair(mtext.split('/')[0])
 
 
-def get_gym_crowd():
+def get_gym_crowd(user_question):
     import urllib.request as req
     url_gym_crowd = 'https://swimpool.nctu.edu.tw/NCTUGym/index.php/crowd/GetGymCrowd'
     url_gym_crowd_line = 'https://swimpool.nctu.edu.tw/NCTUGym/index.php/crowd/GetGymLineCrowd'
@@ -2830,10 +2830,29 @@ def get_gym_crowd():
     reply_msg = "目前游泳館健身房有" + data_gym_crowd_json['crowd'] + "人\n\n資料更新時間：\n" + data_gym_crowd_json['time']
     message = TextSendMessage(reply_msg)
 
-    return message
+    feedback = TemplateSendMessage(
+        alt_text='請問答案對您是有幫助的嗎？',
+        template=ButtonsTemplate(
+            title='請問答案對您是有幫助的嗎？',
+            text='請問答案對您的問題【' + user_question + '】是有幫助的嗎？',
+            actions=[
+                MessageTemplateAction(
+                    label='有幫助',
+                    text='@答案回饋(|)' + user_question + '(|)有幫助'
+                ), MessageTemplateAction(
+                    label='沒幫助',
+                    text='@答案回饋(|)' + user_question + '(|)沒幫助'
+                )
+            ]
+        )
+    )
+    return [
+        message,
+        feedback
+    ]
 
 
-def get_pool_crowd():
+def get_pool_crowd(user_question):
     import urllib.request as req
     url_pool_crowd = 'https://swimpool.nctu.edu.tw/NCTUGym/index.php/crowd/GetPoolCrowd'
 
@@ -2851,7 +2870,26 @@ def get_pool_crowd():
     reply_msg = "目前游泳池有：" + data_pool_crowd_json['crowd'] + "人\n\n資料更新時間：\n" + data_pool_crowd_json['time']
     message = TextSendMessage(reply_msg)
 
-    return message
+    feedback = TemplateSendMessage(
+        alt_text='請問答案對您是有幫助的嗎？',
+        template=ButtonsTemplate(
+            title='請問答案對您是有幫助的嗎？',
+            text='請問答案對您的問題【' + user_question + '】是有幫助的嗎？',
+            actions=[
+                MessageTemplateAction(
+                    label='有幫助',
+                    text='@答案回饋(|)' + user_question + '(|)有幫助'
+                ), MessageTemplateAction(
+                    label='沒幫助',
+                    text='@答案回饋(|)' + user_question + '(|)沒幫助'
+                )
+            ]
+        )
+    )
+    return [
+        message,
+        feedback
+    ]
 
 
 def restaurant(mtext):
@@ -2931,7 +2969,7 @@ def restaurant(mtext):
         )
 
 
-def ask_restaurant(mtext):
+def ask_restaurant(mtext, user_question):
     restaurant = mtext.split('/')[1]
     action = mtext.split('/')[2]
 
@@ -2959,16 +2997,37 @@ def ask_restaurant(mtext):
                 elif days['data'][now_clock] <= 25:
                     popular_level = '通常極為繁忙'
                 rmtext = '根據Google Map的統計\n目前' + restaurant + '為' + popular_level
-                return TextSendMessage(rmtext)
+                message = TextSendMessage(rmtext)
 
     else:
         result = pd.read_sql("SELECT " + action + " from dbo.學生餐廳資訊 \
                 WHERE 餐廳名稱 LIKE '%" + restaurant + "%'", cnxn)
 
         if action == '營業時間':
-            return TextSendMessage(result[action][0])
+            message = TextSendMessage(result[action][0])
         elif action == '菜單網址':
-            return ImageSendMessage(original_content_url=result[action][0], preview_image_url=result[action][0])
+            message = ImageSendMessage(original_content_url=result[action][0], preview_image_url=result[action][0])
+
+    feedback = TemplateSendMessage(
+        alt_text='請問答案對您是有幫助的嗎？',
+        template=ButtonsTemplate(
+            title='請問答案對您是有幫助的嗎？',
+            text='請問答案對您的問題【' + user_question + '】是有幫助的嗎？',
+            actions=[
+                MessageTemplateAction(
+                    label='有幫助',
+                    text='@答案回饋(|)' + user_question + '(|)有幫助'
+                ), MessageTemplateAction(
+                    label='沒幫助',
+                    text='@答案回饋(|)' + user_question + '(|)沒幫助'
+                )
+            ]
+        )
+    )
+    return [
+        message,
+        feedback
+    ]
 
 
 def answer_feedback(mtext):

@@ -5,6 +5,7 @@
 ```shell
 git clone https://github.com/youxanjump/NYCU-luis-based-linebot.git
 cd NYCU-luis-based-linebot
+git clone https://github.com/youxanjump/luis_sheet.git
 ```
 2. Create and Activate虛擬環境
 ```shell
@@ -12,14 +13,7 @@ virtualenv env
 source env/bin/activate
 ```
 3. 安裝python所需套件
-  - for Windows
   ```shell
-  cd NYCU-luis-based-linebot
-  py -m pip install -r requirements.txt
-  ```
-  - for macOS
-  ```shell
-  cd NYCU-luis-based-linebot
   python -m pip install -r requirements.txt
   ```
 4. 安裝Nodejs所需套件
@@ -31,9 +25,10 @@ npm install
 - 因為資料庫是使用微軟的MSSQL，記得要裝Microsoft ODBC driver（[for macOS](https://docs.microsoft.com/zh-tw/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos?view=sql-server-ver15)、[for Windows](https://docs.microsoft.com/zh-tw/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver15)、[for Linux](https://docs.microsoft.com/zh-tw/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15)）
 6. 連入學校VPN(不一定要做)
 - 資料存取都是學校大數據中心的電腦，所以記得要連學校VPN才可以正常使用，但如果在學校的話就不用特別連了([設定教學](https://it.nycu.edu.tw/it-services/networks/ssl-vpn/))
-7. 測試Luis以及資料庫是否能正常運作
+7. NYCU-luis-based-linebot/bot_config.py luis_sheet/config_LUIS.js luis_sheet/cred.json從大數據雲端下載
+8. 測試Luis以及資料庫是否能正常運作
 ```shell
-cd NYCU-luis-based-linebot
+cd ..
 python manage.py test
 ```
 - 輸入任何「有關學校問題的自然語言」，輸出Intent以及所需參數
