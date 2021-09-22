@@ -40,7 +40,7 @@ def callback():
     except InvalidSignatureError:
         abort(400)
 
-    return 'OK'
+    return '', 200
 
 
 @handler.add(MessageEvent, message=TextMessage)
@@ -49,15 +49,16 @@ def reply_message(event):
     # get intent from mtext in order to return the optimize answer
     intent = mtext.split('/')[0]
     question_feedback_intent = mtext.split('(|)')[0]
+    user_question = event.message.text
     # 課程相關
     if intent == '課程種類一覽':
-        message = show_course(mtext)
+        message = show_course(mtext, user_question)
     elif intent == '免修申請':
-        message = course_exemption(mtext)
+        message = course_exemption(mtext, user_question)
     elif intent == '免擋修申請':
-        message = no_block_course(mtext)
+        message = no_block_course(mtext, user_question)
     elif intent == '考古題相關':
-        message = archaeological_question(mtext)
+        message = archaeological_question(mtext, user_question)
     # 系所畢業相關資格規定
     elif intent == '系所畢業資格' or intent == '@系所畢業規定':
         message = graguated_information(mtext)
@@ -77,13 +78,13 @@ def reply_message(event):
     elif intent == '@輔系與雙主修':
         message = aux_and_double_major_admission(mtext)
     elif intent == '@輔系申請' or intent == '輔修申請':
-        message = aux_admission(mtext)
+        message = aux_admission(mtext, user_question)
     elif intent == '@輔系申請規定':
         message = aux_admission_information(mtext)
     elif intent == '@雙主修申請' or intent == '雙主修申請':
         message = double_major_admission(mtext)
     elif intent == '@雙主修申請規定':
-        message = double_major_admission_information(mtext)
+        message = double_major_admission_information(mtext, user_question)
     elif intent == '@轉換系所' or intent == '轉換系所':
         message = transfer_department_admission(mtext)
     elif intent == '@轉入系所':
@@ -116,19 +117,19 @@ def reply_message(event):
     elif intent == '各單位簡介或功能':
         message = introduction_of_department(mtext)
     elif intent == '@歷史沿革' or intent == '各單位的歷史或沿革':
-        message = history_of_department(mtext)
+        message = history_of_department(mtext, user_question)
     elif intent == '@未來出路' or intent == '系所未來出路':
-        message = future_of_department(mtext)
+        message = future_of_department(mtext, user_question)
     elif intent == '@指導教授':
         message = professer_of_department(mtext)
     elif intent == '@教授選定' or intent == '如何選定指導教授':
-        message = professor_choose(mtext)
+        message = professor_choose(mtext, user_question)
     elif intent == '@教授共指' or intent == '共同指導相關規定':
-        message = professor_joint(mtext)
+        message = professor_joint(mtext, user_question)
     elif intent == '@教授更換' or intent == '如何更換指導教授':
-        message = professor_change(mtext)
+        message = professor_change(mtext, user_question)
     elif intent == '推薦信相關' or intent == '@推薦信':
-        message = recommendation(mtext)
+        message = recommendation(mtext, user_question)
     # 各式證明申請
     elif intent == '證明申請':
         message = proof(mtext)
@@ -362,6 +363,7 @@ def place_object_detial(mtext):
 
 def library(mtext):
     if len(mtext.split('/'))<3:
+        behavior = mtext.split('/')[1]
         return TemplateSendMessage(
             alt_text='圖書館相關規定',
             template=ButtonsTemplate(
@@ -370,11 +372,11 @@ def library(mtext):
                 actions=[
                     MessageTemplateAction(
                         label='交大校區',
-                        text='@圖書館相關規定/交大校區/沒指定'
+                        text='@圖書館相關規定/交大校區/' + behavior
                     ),
                     MessageTemplateAction(
                         label='陽明校區',
-                        text='@圖書館相關規定/陽明校區/沒指定'
+                        text='@圖書館相關規定/陽明校區/' + behavior
                     )
                 ]
             )
@@ -1509,6 +1511,9 @@ def course_rule(mtext):
             asked_organ = asked_organ + education
         if group != '沒指定':
             asked_organ = asked_organ + group
+
+        if asked_organ == '':
+            return repair_function(mtext.split('/')[0])
 
         return TemplateSendMessage(
             alt_text='請問是' + asked_organ + '的哪方面的修課資訊呢？',
@@ -2778,7 +2783,8 @@ def archaeological_question(mtext, user_question):
 
 
 def campus_map(mtext):
-    map_category = mtext.split('/')[1]
+    campus = mtext.split('/')[1]
+    map_category = mtext.split('/')[2]
     if map_category == '停車地圖':
         return TemplateSendMessage(
             alt_text = '停車地圖',

@@ -15,13 +15,18 @@ while mtext != '':
     else:
         print("測試中...")
         try:
-            mtext = muterun_js('luis_sheet/get_db_intent.js 我想畢業').stdout.decode('utf-8')
-            if (mtext == '系所畢業資格/沒指定/沒指定/沒指定/沒指定/沒指定'):
-                print('環境OK!\n')
+            mtext = muterun_js('luis_sheet/get_db_intent.js 我想畢業')
+            if(mtext.exitcode == 0):
+                if (mtext.stdout.decode('utf-8') == '系所畢業資格/沒指定/沒指定/沒指定/沒指定/沒指定'):
+                    print('環境OK!\n')
+                else:
+                    print('環境沒問題，但Luis的判斷好像出事了...\n用其他文字測試一下\n')
             else:
-                print('環境沒問題，但Luis的判斷好像出事了...\n用其他文字測試一下\n')
+                print(mtext.stderr)
+                import sys
+                sys.exit()
         except:
-            print('出事ㄌQQ\n檢查一下哪個步驟沒做好！')
+            print('出事ㄌQQ\n檢查一下哪個步驟沒做好！(可能是某些金鑰沒有用到)')
             import sys
             sys.exit()
     mtext = input('請輸入要測試的文字(若要結束請直接按Enter or Return)：')
