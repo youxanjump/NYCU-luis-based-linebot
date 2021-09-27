@@ -2899,8 +2899,12 @@ def get_pool_crowd(user_question):
 
 
 def restaurant(mtext):
-    campus = mtext.split('/')[1]
-    restaurant = mtext.split('/')[2]
+    if (len(mtext.split('/')) < 3):
+        campus = '沒指定'
+        restaurant = mtext.split('/')[1]
+    else:
+        campus = mtext.split('/')[1]
+        restaurant = mtext.split('/')[2]
     if (restaurant == '沒指定' or restaurant == ''):
         if (campus == '沒指定' or campus == ''):
             return TemplateSendMessage(
@@ -2945,8 +2949,7 @@ def restaurant(mtext):
             )
     else:
         result = pd.read_sql("SELECT 餐廳名稱 from dbo.學生餐廳資訊 \
-                WHERE 校區 LIKE '%" + campus + "%'\
-                AND 學生餐廳 LIKE '%" + restaurant + "%'", cnxn)
+                WHERE 學生餐廳 LIKE '%" + restaurant + "%'", cnxn)
         restaurant_name_list = []
         for restaurant_name in result['餐廳名稱']:
             restaurant_name_list.append(CarouselColumn(

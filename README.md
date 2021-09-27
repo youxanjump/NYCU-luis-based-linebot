@@ -34,7 +34,7 @@ python manage.py test
 - 輸入任何「有關學校問題的自然語言」，輸出Intent以及所需參數
 - 若無法判斷Intent則會回傳原本輸入的字句
 
-## intent_test.py
+## intent_test.py導讀
 單純用來測試自然語言透過luis_sheet專案分析完後的結果
 
 - 語意分析流程程式碼導讀
@@ -42,7 +42,7 @@ python manage.py test
 2. 在這裡會將剛才傳進來的mtext打包成要餵給LUIS的Foramt，接著將其丟進目前 “util/for_get_db_intents/_get_db_intents.js”中的function “getDBIntents“
 3. 接著跟著code的註解，應該能滿清楚每個function的功用
 
-## main.py
+## 測試用LINEBOT
 - bot_config.py在我本人這邊，因為金鑰都在這裡
 - 要測試的話，去安裝[ngrok](https://ngrok.com)
 - 執行ngrok
@@ -53,4 +53,9 @@ ngrok http 5000
 - 執行main.py
 ```shell
 python manage.py runserver
+```
+
+## 後台管理系統
+```shell
+python manage.py admin
 ```
