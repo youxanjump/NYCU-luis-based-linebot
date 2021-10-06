@@ -1,6 +1,6 @@
 from bot_config import MSSQL_ENGINE_FLASK
 
-from flask import Flask, url_for
+from flask import Flask, request, render_template, redirect, session, abort
 from flask_sqlalchemy import SQLAlchemy
 import flask_admin as admin
 import flask_admin.form as form
@@ -10,13 +10,46 @@ from flask_admin.contrib.sqla import ModelView
 # Create flask app
 app = Flask(__name__, template_folder='templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = MSSQL_ENGINE_FLASK
-app.config['SECRET_KEY'] = 'dumb_screct'
+# hash hex string
+app.config['SECRET_KEY'] = '9a44008af86bba94f5be62cf82fe9317'
 app.debug = True
+
+# Flask views
+@app.route('/')
+def index():
+    return redirect('/login')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # 帳號密碼直接定義在這
+    users = {
+        'testuser': 'testpassword',
+        'admin': 'admin'
+    }
+
+    if request.method == 'POST':
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if username in users and password == users[username]:
+            session['logged_in'] = True
+            session['username'] = username
+            return redirect('/admin')
+        else:
+            return render_template('login/login.html', failed=True)
+
+    return render_template('login/login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/login')
+
+
 db = SQLAlchemy(app)
 
 
 # 不知道麼沒辦法設定id作為pk，也沒辦法讓他自動填入值
-# 可以讓priary_key顯示出來的View
+# 可以讓priary_key顯示出來的ModelView(可以編輯資料的頁面模板)
 class AdminView(ModelView):
     def __init__(self, model, session, **kwargs):
         # 取得table的column的名字
@@ -26,6 +59,12 @@ class AdminView(ModelView):
         self.form_columns = self.column_list
         print(self.column_list)
         super(AdminView, self).__init__(model, session, **kwargs)
+
+    def is_accessible(self):
+        if 'logged_in' in session:
+            return True
+        else:
+            return redirect('/login')
 
 
 # 學生餐廳相關的View
@@ -58,10 +97,11 @@ class ConsultantAdmin(db.Model):
     __tablename__ = '學號_系所_諮商師 對應表'
     院 = db.Column(db.String(255))
     系所 = db.Column(db.String(255), primary_key=True)
-    # 學號_06 = db.Column("06學號起", db.String(255))
-    # 學號_07 = db.Column("07學號起", db.String(255))
-    # 學號_08 = db.Column("08學號起", db.String(255))
-    # 學號_09 = db.Column("09學號起", db.String(255))
+    學號起_06學年度 = db.Column(db.String(255))
+    學號起_07學年度 = db.Column(db.String(255))
+    學號起_08學年度 = db.Column(db.String(255))
+    學號起_09學年度 = db.Column(db.String(255))
+    學號起_10學年度 = db.Column(db.String(255))
     諮商師 = db.Column(db.String(255))
     分機 = db.Column(db.Integer)
     email = db.Column(db.String(255))
@@ -86,17 +126,24 @@ class RepairTableAdmin(db.Model):
         return self.desc
 
 
-# Flask views
-@app.route('/')
-def index():
-    # print(db.engine.table_names())
-    testadmin = ConsultantAdmin()
-    print(testadmin.__table__.columns.keys())
-    return '<a class="btn btn-primary" href="/admin"><i class="glyphicon glyphicon-chevron-left"></i>進入後台管理系統</a>'
+# Information Table View
+class InformationTableView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('Class', 'Information')
+    column_default_sort = 'Class'
 
+
+class InformationTableAdmin(db.Model):
+    __tablename__ = 'information_table'
+    Class = db.Column(db.String(20), primary_key=True)
+    Information = db.Column(db.String(20), primary_key=True)
+    Alias = db.Column(db.String(20), primary_key=True)
+
+    def __unicode__(self):
+        return self.desc
 
 # Create admin interface
-admin = admin.Admin(name="《陽明交大 - 校園小幫手》後台管理系統", template_mode='bootstrap4')
+admin = admin.Admin(name="《陽明交大校園聊天機器人》後台管理系統", template_mode='bootstrap4')
 admin.add_view(RestaurantView(
                     RestaurantAdmin,
                     db.session,
@@ -113,6 +160,12 @@ admin.add_view(RepairTableView(
                     RepairTableAdmin,
                     db.session,
                     name='對話修補機制',
+                    category='小幫手相關'
+                ))
+admin.add_view(InformationTableView(
+                    InformationTableAdmin,
+                    db.session,
+                    name='InformationTable',
                     category='小幫手相關'
                 ))
 admin.init_app(app)

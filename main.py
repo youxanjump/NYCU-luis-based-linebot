@@ -132,7 +132,7 @@ def reply_message(event):
         message = recommendation(mtext, user_question)
     # 各式證明申請
     elif intent == '證明申請':
-        message = proof(mtext)
+        message = proof(mtext, user_question)
     elif intent == '@停車證明':
         message = parking_regist(mtext)
     # 校內單位工讀、徵才相關機會
@@ -524,7 +524,7 @@ def job():
     return message
 
 
-def proof(mtext):
+def proof(mtext, user_question):
     if len(mtext.split('/')) != 2:
         return repair_function(mtext.split('/')[0])
     elif mtext.split('/')[1] == '停車證':
@@ -550,8 +550,12 @@ def proof(mtext):
                 ]
             )
         )
+    elif mtext.split('/')[1] == '在學證明':
+        result = pd.read_sql("SELECT Answer from dbo.interview_information \
+                WHERE Question LIKE '%" + mtext + "%'", cnxn)
+        return TextSendMessage(text=result['Answer'][0])
     else:
-        return TextSendMessage(mtext)
+        return repair_function(mtext.split('/')[0])
 
 
 def parking_regist(mtext):
