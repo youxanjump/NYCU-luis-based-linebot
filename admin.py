@@ -14,10 +14,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = MSSQL_ENGINE_FLASK
 app.config['SECRET_KEY'] = '9a44008af86bba94f5be62cf82fe9317'
 app.debug = True
 
+
 # Flask views
 @app.route('/')
 def index():
     return redirect('/login')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -44,6 +46,7 @@ def login():
             return render_template('login/login.html', failed=True)
 
     return render_template('login/login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -155,6 +158,252 @@ class InformationTableAdmin(db.Model):
     def __unicode__(self):
         return self.desc
 
+
+# 系所簡介以及功能
+class IntroductionView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '學院', '系所', '介紹類別')
+    column_default_sort = '系所'
+
+
+class IntroductionAdmin(db.Model):
+    __tablename__ = '各單位的簡介或功能'
+    校區 = db.Column(db.String(10))
+    學院 = db.Column(db.String(10))
+    系所 = db.Column(db.String(20),  primary_key=True)
+    學歷 = db.Column(db.String(10),  primary_key=True)
+    組別 = db.Column(db.String(20),  primary_key=True)
+    介紹類別 = db.Column(db.String(20),  primary_key=True)
+    介紹內容 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 系所申請與轉換
+class AcademyAdmissionView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '學院', '系所')
+    column_default_sort = '系所'
+
+
+class AcademyAdmissionAdmin(db.Model):
+    __tablename__ = '系所申請與轉換'
+    校區 = db.Column(db.String(10))
+    學院 = db.Column(db.String(10))
+    系所 = db.Column(db.String(20),  primary_key=True)
+    學歷 = db.Column(db.String(10),  primary_key=True)
+    五年碩申請 = db.Column(db.TEXT)
+    輔系申請 = db.Column(db.TEXT)
+    雙主修申請 = db.Column(db.TEXT)
+    雙聯學位申請 = db.Column(db.TEXT)
+    轉入系所 = db.Column(db.TEXT)
+    轉出系所 = db.Column(db.TEXT)
+    入學方式 = db.Column(db.TEXT)
+    逕博相關規定 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 系所簡介以及功能
+class GraguationView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '學院', '系所', '畢業相關項目')
+    column_default_sort = '系所'
+
+
+class GraguationAdmin(db.Model):
+    __tablename__ = '系所畢業規定'
+    校區 = db.Column(db.String(10))
+    學院 = db.Column(db.String(10))
+    系所 = db.Column(db.String(20),  primary_key=True)
+    學歷 = db.Column(db.String(10),  primary_key=True)
+    組別 = db.Column(db.String(20),  primary_key=True)
+    畢業相關項目 = db.Column(db.String(20),  primary_key=True)
+    項目畢業規定 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 系所申請與轉換
+class CourseView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '學院', '系所')
+    column_default_sort = '系所'
+
+
+class CourseAdmin(db.Model):
+    __tablename__ = '系所課程相關'
+    校區 = db.Column(db.String(10))
+    學院 = db.Column(db.String(10))
+    系所 = db.Column(db.String(20),  primary_key=True)
+    學歷 = db.Column(db.String(10),  primary_key=True)
+    課程免修 = db.Column(db.TEXT)
+    課程免擋修 = db.Column(db.TEXT)
+    考古題相關 = db.Column(db.TEXT)
+    課程種類一覽 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 場地物品租借
+class PlaceObjectBorrowView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '大樓名稱', '場地或設備名稱')
+    column_default_sort = '大樓名稱'
+
+
+class PlaceObjectBorrowAdmin(db.Model):
+    __tablename__ = '場地物品租借方式'
+    校區 = db.Column(db.String(10),  primary_key=True)
+    大樓名稱 = db.Column(db.String(10),  primary_key=True)
+    場地或設備名稱 = db.Column(db.String(20),  primary_key=True)
+    簡短資訊 = db.Column(db.TEXT)
+    租借方式 = db.Column(db.TEXT)
+    詳細資訊 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 答案回饋
+class AnswerFeedbackView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('ID', 'Question', 'Feedback')
+    column_default_sort = 'Time'
+
+
+class AnswerFeedbackAdmin(db.Model):
+    __tablename__ = '答案回饋'
+    ID = db.Column(db.TEXT,  primary_key=True)
+    Time = db.Column(db.String(20),  primary_key=True)
+    Question = db.Column(db.TEXT)
+    Feedback = db.Column(db.String(20))
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 圖書館借還書規定
+class LibraryView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '行為')
+    column_default_sort = '校區'
+
+
+class LibraryAdmin(db.Model):
+    __tablename__ = '圖書館借還書'
+    校區 = db.Column(db.String(10),  primary_key=True)
+    行為 = db.Column(db.String(20),  primary_key=True)
+    行為細項 = db.Column(db.String(20))
+    方式 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 獎助學金申請方式
+class ScholarshipView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('種類', '校區', '學院', '系所')
+    column_default_sort = '學院'
+
+
+class ScholarshipAdmin(db.Model):
+    __tablename__ = '獎助學金申請方式'
+    種類 = db.Column(db.String(10))
+    校區 = db.Column(db.String(20),  primary_key=True)
+    學院 = db.Column(db.String(20))
+    系所 = db.Column(db.String(20),  primary_key=True)
+    申請方式 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 學分抵免與認定之規定
+class CreditsView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('校區', '學院', '系所', '學分問題類別')
+    column_default_sort = '系所'
+
+
+class CreditsAdmin(db.Model):
+    __tablename__ = '學分抵免與認定之規定'
+    校區 = db.Column(db.String(10))
+    學院 = db.Column(db.String(10))
+    系所 = db.Column(db.String(20),  primary_key=True)
+    學歷 = db.Column(db.String(10),  primary_key=True)
+    組別 = db.Column(db.String(20),  primary_key=True)
+    學分問題類別 = db.Column(db.String(20),  primary_key=True)
+    學分規定 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# 學校各部門聯絡方式
+class ContactView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('學校', '單位類別', '單位', '部門')
+    column_default_sort = '優先度'
+
+
+class ContactAdmin(db.Model):
+    __tablename__ = '學校各部門聯絡方式'
+    學校 = db.Column(db.String(10))
+    單位類別 = db.Column(db.String(10))
+    單位 = db.Column(db.String(20),  primary_key=True)
+    優先度 = db.Column(db.String(10))
+    部門 = db.Column(db.String(20),  primary_key=True)
+    分機 = db.Column(db.String(20))
+    專線 = db.Column(db.String(20))
+    位置 = db.Column(db.TEXT)
+    網站 = db.Column(db.String(50))
+    updatatime = db.Column(db.String(20))
+    source = db.Column(db.String(50))
+    經度 = db.Column(db.String(20))
+    緯度 = db.Column(db.String(20))
+    開放時間 = db.Column(db.TEXT)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# Interview Table View
+class InterviewTableView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('Question', 'Answer')
+    column_default_sort = 'Question'
+
+
+class InterviewTableAdmin(db.Model):
+    __tablename__ = 'interview_information'
+    Question = db.Column(db.String(50), primary_key=True)
+    Answer = db.Column(db.Text)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# Mapping Intent Table View
+class MappingIntentView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('Intent', 'Answer')
+    column_default_sort = 'Intent'
+
+
+class MappingIntentAdmin(db.Model):
+    __tablename__ = 'mapping_intent'
+    Intent = db.Column(db.String(50), primary_key=True)
+    Answer = db.Column(db.Text)
+
+    def __unicode__(self):
+        return self.desc
+
 # Create admin interface
 admin = admin.Admin(name="《陽明交大校園聊天機器人》後台管理系統", template_mode='bootstrap4')
 admin.add_view(RestaurantView(
@@ -178,7 +427,80 @@ admin.add_view(RepairTableView(
 admin.add_view(InformationTableView(
                     InformationTableAdmin,
                     db.session,
-                    name='InformationTable',
+                    name='實體別稱表',
+                    category='小幫手相關'
+                ))
+admin.add_view(IntroductionView(
+                    IntroductionAdmin,
+                    db.session,
+                    name='各單位簡介或功能',
+                    category='小幫手相關'
+                ))
+
+admin.add_view(AcademyAdmissionView(
+                    AcademyAdmissionAdmin,
+                    db.session,
+                    name='系所申請與轉換',
+                    category='小幫手相關'
+                ))
+admin.add_view(GraguationView(
+                    GraguationAdmin,
+                    db.session,
+                    name='系所畢業規定',
+                    category='小幫手相關'
+                ))
+admin.add_view(CourseView(
+                    CourseAdmin,
+                    db.session,
+                    name='系所課程相關',
+                    category='小幫手相關'
+                ))
+admin.add_view(PlaceObjectBorrowView(
+                    PlaceObjectBorrowAdmin,
+                    db.session,
+                    name='場地物品租借方式',
+                    category='小幫手相關'
+                ))
+admin.add_view(AnswerFeedbackView(
+                    AnswerFeedbackAdmin,
+                    db.session,
+                    name='問題回饋',
+                    category='小幫手相關'
+                ))
+admin.add_view(LibraryView(
+                    LibraryAdmin,
+                    db.session,
+                    name='圖書館借還書規定',
+                    category='小幫手相關'
+                ))
+admin.add_view(ScholarshipView(
+                    ScholarshipAdmin,
+                    db.session,
+                    name='獎助學金申請方式',
+                    category='小幫手相關'
+                ))
+admin.add_view(CreditsView(
+                    CreditsAdmin,
+                    db.session,
+                    name='學分抵免與認定之規定',
+                    category='小幫手相關'
+                ))
+admin.add_view(ContactView(
+                    ContactAdmin,
+                    db.session,
+                    name='學校各部門聯絡方式',
+                    category='小幫手相關'
+                ))
+admin.add_view(InterviewTableView(
+                    InterviewTableAdmin,
+                    db.session,
+                    name='其他訪談資訊',
+                    category='小幫手相關'
+                ))
+admin.add_view(MappingIntentView(
+                    MappingIntentAdmin,
+                    db.session,
+                    name='自然語言與按鈕對應表',
                     category='小幫手相關'
                 ))
 admin.init_app(app)
