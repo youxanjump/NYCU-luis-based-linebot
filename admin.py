@@ -23,16 +23,22 @@ def index():
 def login():
     # 帳號密碼直接定義在這
     users = {
-        'testuser': 'testpassword',
-        'admin': 'admin'
+        'testuser': {
+            'password': 'testpassword',
+            'permission': 1
+        },
+        'admin': {
+            'password': 'admin',
+            'permission': 3
+        },
     }
 
     if request.method == 'POST':
         username = request.form.get("username")
         password = request.form.get("password")
-        if username in users and password == users[username]:
+        if username in users and password == users[username]['password']:
             session['logged_in'] = True
-            session['username'] = username
+            session['permission'] = users[username]['permission']
             return redirect('/admin')
         else:
             return render_template('login/login.html', failed=True)
@@ -62,7 +68,14 @@ class AdminView(ModelView):
 
     def is_accessible(self):
         if 'logged_in' in session:
-            return True
+            # 針對不同分頁的權限設置
+            if str(request.url_rule) == '/admin/consultantadmin/':
+                if session['permission'] == 3:
+                    return True
+                else:
+                    return abort(403)
+            else:
+                return True
         else:
             return redirect('/login')
 
