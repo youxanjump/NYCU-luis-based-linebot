@@ -167,7 +167,7 @@ class IntroductionView(AdminView):
 
 
 class IntroductionAdmin(db.Model):
-    __tablename__ = '各單位的簡介或功能'
+    __tablename__ = '各單位簡介或功能'
     校區 = db.Column(db.String(10))
     學院 = db.Column(db.String(10))
     系所 = db.Column(db.String(20),  primary_key=True)
@@ -345,7 +345,7 @@ class CreditsAdmin(db.Model):
         return self.desc
 
 
-# 學校各部門聯絡方式
+# 學校各部門連絡方式
 class ContactView(AdminView):
     # column_searchable_list不能只放一個PK(待查證原因)
     column_searchable_list = ('學校', '單位類別', '單位', '部門')
@@ -353,7 +353,7 @@ class ContactView(AdminView):
 
 
 class ContactAdmin(db.Model):
-    __tablename__ = '學校各部門聯絡方式'
+    __tablename__ = '學校各部門連絡方式'
     學校 = db.Column(db.String(10))
     單位類別 = db.Column(db.String(10))
     單位 = db.Column(db.String(20),  primary_key=True)
@@ -488,7 +488,7 @@ admin.add_view(CreditsView(
 admin.add_view(ContactView(
                     ContactAdmin,
                     db.session,
-                    name='學校各部門聯絡方式',
+                    name='學校各部門連絡方式',
                     category='小幫手相關'
                 ))
 admin.add_view(InterviewTableView(
