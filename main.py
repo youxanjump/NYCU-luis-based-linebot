@@ -26,7 +26,7 @@ app = Flask(__name__)
 app.config.from_object(DevConfig)
 
 
-@app.route("/CampusChatbot", methods=['POST'])
+@app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
 
@@ -163,6 +163,9 @@ def reply_message(event):
         message = restaurant(mtext)
     elif intent == '@詢問學生餐廳':
         message = ask_restaurant(mtext, user_question)
+    # 門禁卡申請
+    elif intent == '門禁卡申請' or '@門禁卡申請':
+        message = building_access(mtext, user_question)
     # 答案回饋
     elif question_feedback_intent == '@答案回饋':
         message = answer_feedback(mtext)
@@ -2945,6 +2948,11 @@ def restaurant(mtext):
                 )
                 if not (tmp_list in restaurant_list):
                     restaurant_list.append(tmp_list)
+
+            if len(restaurant_list) == 0:
+                repair_text = '抱歉，我們目前還沒有' + campus + '的餐廳資訊唷！還在努力搜集中！'
+                return TextSendMessage(repair_text)
+
             return TemplateSendMessage(
                 alt_text='請選擇餐廳',
                 template=CarouselTemplate(
@@ -2974,6 +2982,11 @@ def restaurant(mtext):
                     )
                 ]
             ))
+
+        if len(restaurant_name_list) == 0:
+            repair_text = '抱歉，我們目前還沒有' + restaurant + '的資訊唷！還在努力搜集中！'
+            return TextSendMessage(repair_text)
+
         return TemplateSendMessage(
             alt_text='請選擇餐廳',
             template=CarouselTemplate(
@@ -3041,6 +3054,74 @@ def ask_restaurant(mtext, user_question):
         message,
         feedback
     ]
+
+
+def building_access(mtext, user_question):
+    if len(mtext.split('/')) == 2:
+        building = mtext.split('/')[1]
+
+        getAccess = "SELECT 門禁卡申請方式 from dbo.門禁卡申請 WHERE 大樓名稱 LIKE '%" + building + "%';"
+        accessWay = pd.read_sql(getAccess,cnxn)
+
+        if(accessWay.empty or accessWay["門禁卡申請方式"][0] == ''):
+            return TextSendMessage('小幫手不確定您想詢問哪棟大樓的們近申請方式喔！在麻煩您換句話說看看！')
+
+        elif(len(accessWay["門禁卡申請方式"]) > 1):
+            return TemplateSendMessage(
+                alt_text='請問想詢問哪個校區的' + building + '的門禁卡申請方式呢？',
+                template=ButtonsTemplate(
+                    title='請選擇校區',
+                    text='請問想詢問哪個校區的' + building + '的門禁卡申請方式呢？',
+                    actions=[
+                        MessageTemplateAction(
+                            label='交大校區',
+                            text='@門禁卡申請/交大校區/' + building
+                        ),
+                        MessageTemplateAction(
+                            label='陽明校區',
+                            text='@門禁卡申請/陽明校區/' + building
+                        )
+                    ]
+                )
+            )
+
+        message = TextSendMessage(accessWay["門禁卡申請方式"][0])
+
+    elif len(mtext.split('/')) == 3:
+        campus = mtext.split('/')[1]
+        building = mtext.split('/')[2]
+        getAccess = "SELECT 門禁卡申請方式 from dbo.門禁卡申請 WHERE 大樓名稱 LIKE '%" + building + "%' AND 校區 LIKE '%" + campus + "%';"
+        accessWay = pd.read_sql(getAccess,cnxn)
+
+        if(accessWay.empty or accessWay["門禁卡申請方式"][0] == ''):
+            return TextSendMessage('小幫手不確定您想詢問哪棟大樓的們近申請方式喔！在麻煩您換句話說看看！')
+
+        message = TextSendMessage(accessWay["門禁卡申請方式"][0])
+
+    else:
+        return TextSendMessage('小幫手不確定您想詢問哪棟大樓的們近申請方式喔！在麻煩您換句話說看看！')
+
+    feedback = TemplateSendMessage(
+        alt_text='請問答案對您是有幫助的嗎？',
+        template=ButtonsTemplate(
+            title='請問答案對您是有幫助的嗎？',
+            text='請問答案對您的問題【' + user_question + '】是有幫助的嗎？',
+            actions=[
+                MessageTemplateAction(
+                    label='有幫助',
+                    text='@答案回饋(|)' + user_question + '(|)有幫助'
+                ), MessageTemplateAction(
+                    label='沒幫助',
+                    text='@答案回饋(|)' + user_question + '(|)沒幫助'
+                )
+            ]
+        )
+    )
+    return [
+        message,
+        feedback
+    ]
+
 
 
 def answer_feedback(mtext):

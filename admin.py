@@ -94,10 +94,10 @@ class RestaurantAdmin(db.Model):
     __tablename__ = '學生餐廳資訊'
     校區 = db.Column(db.String(10))
     學生餐廳 = db.Column(db.String(15))
-    餐廳名稱 = db.Column(db.String(10),  primary_key=True)
+    餐廳名稱 = db.Column(db.String(25),  primary_key=True)
     地點ID = db.Column(db.String(50))
     營業時間 = db.Column(db.TEXT)
-    菜單網址 = db.Column(db.String(50))
+    菜單網址 = db.Column(db.TEXT)
 
     def __unicode__(self):
         return self.desc
@@ -404,6 +404,44 @@ class MappingIntentAdmin(db.Model):
     def __unicode__(self):
         return self.desc
 
+
+# AED Table View
+class AEDView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('緯度', '經度')
+    column_default_sort = '校區'
+
+
+class AEDAdmin(db.Model):
+    __tablename__ = '校園AED'
+    校區 = db.Column(db.Text)
+    地點描述 = db.Column(db.Text)
+    緯度 = db.Column(db.Text,  primary_key=True)
+    經度 = db.Column(db.Text,  primary_key=True)
+
+    def __unicode__(self):
+        return self.desc
+
+
+# ATM Table View
+class ATMView(AdminView):
+    # column_searchable_list不能只放一個PK(待查證原因)
+    column_searchable_list = ('緯度', '經度')
+    column_default_sort = '校區'
+
+
+class ATMAdmin(db.Model):
+    __tablename__ = '校園ATM'
+    校區 = db.Column(db.Text)
+    銀行名稱 = db.Column(db.Text)
+    地點描述 = db.Column(db.Text)
+    緯度 = db.Column(db.Text,  primary_key=True)
+    經度 = db.Column(db.Text,  primary_key=True)
+
+    def __unicode__(self):
+        return self.desc
+
+
 # Create admin interface
 admin = admin.Admin(name="《陽明交大校園聊天機器人》後台管理系統", template_mode='bootstrap4')
 admin.add_view(RestaurantView(
@@ -501,6 +539,18 @@ admin.add_view(MappingIntentView(
                     MappingIntentAdmin,
                     db.session,
                     name='自然語言與按鈕對應表',
+                    category='小幫手相關'
+                ))
+admin.add_view(AEDView(
+                    AEDAdmin,
+                    db.session,
+                    name='校園AED資訊',
+                    category='小幫手相關'
+                ))
+admin.add_view(ATMView(
+                    ATMAdmin,
+                    db.session,
+                    name='校園ATM資訊',
                     category='小幫手相關'
                 ))
 admin.init_app(app)
